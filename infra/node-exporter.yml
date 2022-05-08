@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: root
+        hostPath:
+          path: /
+      containers:
+      - name: node-exporter
+        image: prom/node-exporter:latest
+        args:
+        - "--path.sysfs=/host/sys"
+        - "--path.rootfs=/host/root"
+        volumeMounts:
+        - name: sys
+          mountPath: /host/sys
+          mountPropagation: HostToContainer
+          readOnly: true
+        - name: root
+          mountPath: /host/root
+          mountPropagation: HostToContainer
+          readOnly: true
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 256Mi
+          limits:
+            cpu: 5000m
+            memory: 512Mi
+        ports:
+        - containerPort: 9100
+          hostPort: 9100

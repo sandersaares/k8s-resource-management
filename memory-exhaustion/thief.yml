@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thief
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: thief
+  template:
+    metadata:
+      labels:
+        app: thief
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: consume
+        image: sandersaares/consumer:latest
+        resources:
+          requests:
+            cpu: 1.0
+            memory: 2Gi
+          limits:
+            cpu: 1.0
+            memory: 64Gi
+        args:
+        # We allocate managed memory, whereas the k8s resource management deals with total memory.
+        # Therefore, the numbers are offset by a fair margin to allow for managed/native "overhead".
+        # The reason for this rather large discrepancy is unclear - on dev PC it seems much less.
+        - "--memory-gb=30"
+        ports:
+        - containerPort: 5000

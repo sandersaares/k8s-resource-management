@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thief
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: thief
+  template:
+    metadata:
+      labels:
+        app: thief
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: consume
+        image: sandersaares/consumer:latest
+        resources:
+          requests:
+            cpu: 2
+            memory: 1Gi
+          limits:
+            cpu: 16.0
+            memory: 1Gi
+        args:
+        - "--cpu-cores=7"
+        ports:
+        - containerPort: 5000
